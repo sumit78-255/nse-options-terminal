@@ -1,0 +1,15 @@
+{
+  "name": "NSE Options Terminal",
+  "short_name": "NSEOptions",
+  "description": "Intraday NSE options trading dashboard â Nifty, Bank Nifty, Sensex",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0A0C0F",
+  "background_color": "#0A0C0F",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
