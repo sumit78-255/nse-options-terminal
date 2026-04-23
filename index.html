@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0A0C0F" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="NSEOptions" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="apple-touch-icon" href="./icon-192.png" />
+<link rel="icon" type="image/png" href="./icon-192.png" />
+<title>NSE Options Terminal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0A0C0F; --bg2:#11141A; --bg3:#1A1F28;
+    --green:#00FF88; --red:#FF3B5C; --amber:#FFB800;
+    --white:#F0F0F0; --muted:#7A8390; --border:#1F2630;
+    --grid:#141923;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--white);font-family:'JetBrains Mono',monospace;font-size:12px;min-height:100vh;}
+  h1,h2,h3,h4,.head{font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--white);}
+  button{font-family:inherit;background:var(--bg3);border:1px solid var(--border);color:var(--white);padding:4px 10px;cursor:pointer;border-radius:2px;font-size:11px;}
+  button:hover{border-color:var(--green);color:var(--green);}
+  button.primary{background:var(--green);color:#000;border-color:var(--green);font-weight:700;}
+  button.primary:hover{background:#00cc6a;color:#000;}
+  input,select{font-family:inherit;background:var(--bg);border:1px solid var(--border);color:var(--white);padding:4px 6px;font-size:11px;border-radius:2px;}
+  .g{color:var(--green);} .r{color:var(--red);} .a{color:var(--amber);} .m{color:var(--muted);} .w{color:var(--white);}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .pulse{animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .flash{animation:flash .6s ease-out;}
+  @keyframes flash{0%{background:var(--amber);}100%{background:transparent;}}
+  .border-flash{animation:borderflash 1.2s ease-out 3;}
+  @keyframes borderflash{0%,100%{box-shadow:inset 0 0 0 0 transparent;}50%{box-shadow:inset 0 0 0 3px var(--amber);}}
+  #topbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;padding:8px;background:var(--bg2);border-bottom:1px solid var(--border);align-items:center;}
+  .spotcard{background:var(--bg);border:1px solid var(--border);padding:6px 10px;border-radius:3px;}
+  .spotcard .name{font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--muted);text-transform:uppercase;}
+  .spotcard .price{font-size:16px;font-weight:700;letter-spacing:.5px;}
+  .spotcard .chg{font-size:11px;}
+  .statusline{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap;}
+  .badge{display:inline-block;padding:2px 6px;border-radius:2px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border:1px solid;}
+  .badge.ok{color:var(--green);border-color:var(--green);}
+  .badge.stale{color:var(--red);border-color:var(--red);}
+  .badge.amber{color:var(--amber);border-color:var(--amber);}
+  main{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:8px;padding:8px;}
+  .panel{background:var(--bg2);border:1px solid var(--border);border-radius:3px;overflow:hidden;display:flex;flex-direction:column;min-height:120px;}
+  .panel header{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--bg3);border-bottom:1px solid var(--border);}
+  .panel header h3{font-size:13px;}
+  .panel .body{padding:8px 10px;overflow:auto;}
+  .span2{grid-column:span 2;}
+  .span3{grid-column:span 3;}
+  table{width:100%;border-collapse:collapse;font-size:11px;}
+  th,td{padding:3px 5px;text-align:right;border-bottom:1px solid var(--grid);white-space:nowrap;}
+  th{color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:600;text-transform:uppercase;cursor:pointer;user-select:none;font-size:11px;}
+  th:hover{color:var(--white);}
+  th:first-child,td:first-child{text-align:left;}
+  tr.atm{background:rgba(255,184,0,.08);}
+  tr.atm td:first-child{color:var(--amber);font-weight:700;}
+  .sigbadge{display:inline-block;padding:1px 5px;font-size:9px;border-radius:2px;font-weight:700;letter-spacing:.3px;}
+  .sig-cw{background:rgba(255,59,92,.2);color:var(--red);}
+  .sig-pw{background:rgba(0,255,136,.2);color:var(--green);}
+  .sig-un{background:rgba(255,184,0,.2);color:var(--amber);}
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);padding:0 10px;background:var(--bg3);}
+  .tab{padding:6px 12px;background:transparent;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;border-bottom:2px solid transparent;}
+  .tab.active{color:var(--green);border-bottom-color:var(--green);}
+  .maxpain{padding:6px 10px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+  .maxpain .label{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;color:var(--muted);font-size:11px;}
+  .maxpain .val{font-size:18px;font-weight:700;color:var(--amber);}
+  .suggestion{margin-top:8px;padding:8px 10px;border-left:3px solid var(--green);background:rgba(0,255,136,.05);}
+  .suggestion.bearish{border-left-color:var(--red);background:rgba(255,59,92,.05);}
+  .suggestion.neutral{border-left-color:var(--muted);background:rgba(122,131,144,.05);}
+  .suggestion .tag{font-size:10px;font-weight:700;color:var(--green);letter-spacing:.5px;}
+  .suggestion.bearish .tag{color:var(--red);}
+  .suggestion.neutral .tag{color:var(--muted);}
+  .suggestion .reason{color:var(--muted);font-size:10px;margin-top:3px;}
+  .gauge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+  .gauge{background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:6px;}
+  .gauge .tf{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--muted);text-transform:uppercase;}
+  .gauge .vals{display:flex;justify-content:space-between;align-items:center;margin-top:3px;}
+  .gauge .rsi{font-size:13px;font-weight:700;}
+  .gauge .chip{width:8px;height:8px;border-radius:50%;display:inline-block;}
+  .ema-row.fresh{background:rgba(0,255,136,.08);}
+  .ema-banner{padding:8px 10px;background:rgba(0,255,136,.1);border:1px solid var(--green);color:var(--green);font-weight:700;margin-bottom:8px;text-align:center;}
+  .ema-banner.sell{background:rgba(255,59,92,.1);border-color:var(--red);color:var(--red);}
+  #feed{max-height:calc(100vh - 200px);overflow-y:auto;}
+  .alert{padding:8px 10px;border-left:3px solid;margin-bottom:6px;background:var(--bg);font-size:11px;position:relative;}
+  .alert.crit{border-color:var(--red);background:rgba(255,59,92,.08);}
+  .alert.imp{border-color:var(--amber);background:rgba(255,184,0,.08);}
+  .alert.info{border-color:var(--muted);}
+  .alert .t{color:var(--muted);font-size:9px;}
+  .alert .msg{margin-top:2px;}
+  .alert .x{position:absolute;top:4px;right:6px;cursor:pointer;color:var(--muted);font-size:12px;}
+  #popups{position:fixed;top:16px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:8px;max-width:340px;}
+  .popup{background:var(--bg2);border:2px solid var(--red);border-radius:4px;padding:10px 12px;box-shadow:0 4px 20px rgba(255,59,92,.3);animation:pulse 2s infinite;position:relative;}
+  .popup .title{font-family:'Barlow Condensed',sans-serif;font-size:14px;color:var(--red);font-weight:700;text-transform:uppercase;}
+  .popup .msg{font-size:11px;margin-top:4px;}
+  .popup .close{position:absolute;top:4px;right:8px;cursor:pointer;color:var(--white);background:none;border:none;font-size:14px;}
+  #tradeform{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--green);padding:16px;z-index:1001;border-radius:4px;min-width:280px;}
+  #tradeform.open{display:block;}
+  #tradeform .row{display:flex;gap:6px;margin-bottom:6px;}
+  #tradeform .row label{min-width:80px;font-size:10px;color:var(--muted);align-self:center;text-transform:uppercase;}
+  #tradeform .row input,#tradeform .row select{flex:1;}
+  #trades-table td{padding:3px 4px;}
+  .pnl.pos{color:var(--green);} .pnl.neg{color:var(--red);}
+  #ticker{background:var(--bg2);border-top:1px solid var(--border);overflow:hidden;white-space:nowrap;padding:6px 0;position:relative;}
+  #ticker-inner{display:inline-block;padding-left:100%;animation:scroll 120s linear infinite;}
+  @keyframes scroll{0%{transform:translateX(0);}100%{transform:translateX(-100%);}}
+  #ticker a{color:var(--muted);text-decoration:none;margin-right:30px;font-size:11px;}
+  #ticker a:hover{color:var(--white);}
+  #ticker a.kw{color:var(--amber);font-weight:700;}
+  #ticker .prefix{color:var(--green);font-weight:700;margin-right:20px;}
+  #settings{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--amber);padding:16px;z-index:1002;border-radius:4px;min-width:320px;max-width:90vw;}
+  #settings.open{display:block;}
+  #settings h2{color:var(--amber);font-size:16px;margin-bottom:10px;}
+  #settings .warn{background:rgba(255,184,0,.1);border:1px solid var(--amber);padding:6px 8px;margin:8px 0;font-size:10px;color:var(--amber);}
+  .gear{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;}
+  footer{padding:8px 12px;background:var(--bg);color:var(--red);font-size:10px;text-align:center;border-top:1px solid var(--border);letter-spacing:.5px;}
+  .conf-card{padding:6px 8px;margin-bottom:6px;background:var(--bg);border-left:3px solid var(--muted);font-size:11px;}
+  .conf-card.high{border-color:var(--amber);}
+  .conf-card.vhigh{border-color:var(--green);background:rgba(0,255,136,.05);}
+  .conf-card .score{float:right;font-weight:700;}
+  canvas.spark{width:100%;height:80px;background:var(--bg);border:1px solid var(--border);}
+  @media (max-width:900px){
+    main{grid-template-columns:1fr;}
+    .span2,.span3{grid-column:span 1;}
+    #topbar{grid-template-columns:1fr 1fr;}
+    .statusline{justify-content:flex-start;grid-column:span 2;}
+    #popups{max-width:calc(100vw - 32px);}
+  }
+  #toasts{position:fixed;bottom:60px;left:16px;z-index:999;display:flex;flex-direction:column;gap:6px;}
+  .toast{background:var(--bg3);border-left:3px solid var(--muted);padding:6px 10px;font-size:11px;border-radius:2px;max-width:280px;}
+  #stale-warn{display:none;padding:6px 10px;background:rgba(255,59,92,.15);border-bottom:1px solid var(--red);color:var(--red);font-size:11px;text-align:center;}
+  #stale-warn.show{display:block;}
+</style>
+</head>
+<body>
+<div id="stale-warn"></div>
+<div id="topbar">
+  <div class="spotcard" id="card-nifty">
+    <div class="name">Nifty 50</div>
+    <div class="price mono">--</div>
+    <div class="chg mono m">--</div>
+  </div>
+  <div class="spotcard" id="card-banknifty">
+    <div class="name">Bank Nifty</div>
+    <div class="price mono">--</div>
+    <div class="chg mono m">--</div>
+  </div>
+  <div class="spotcard" id="card-sensex">
+    <div class="name">BSE Sensex</div>
+    <div class="price mono">--</div>
+    <div class="chg mono m">--</div>
+  </div>
+  <div class="spotcard" id="card-vix">
+    <div class="name">India VIX</div>
+    <div class="price mono">--</div>
+    <div class="chg mono m" id="pcr-line">PCR N:-- BN:-- SX:--</div>
+  </div>
+  <div class="statusline">
+    <span class="mono m" id="ist-clock">--:--:-- IST</span>
+    <span class="mono m" id="last-update">Last: --</span>
+    <span class="badge ok" id="status-badge">LIVE</span>
+    <button onclick="refreshAll(true)" id="refresh-btn">Refresh</button>
+    <button onclick="openSettings()" class="gear" title="Settings">*</button>
+  </div>
+</div>
+<main>
+  <section class="panel span2" id="oi-panel">
+    <header>
+      <h3>OI Intelligence</h3>
+      <div>
+        <label class="m" style="font-size:10px;">Expiry:
+          <select id="expiry-select" onchange="renderOI()"></select>
+        </label>
+      </div>
+    </header>
+    <div class="tabs">
+      <button class="tab active" data-idx="NIFTY" onclick="switchIdx('NIFTY')">Nifty</button>
+      <button class="tab" data-idx="BANKNIFTY" onclick="switchIdx('BANKNIFTY')">BankNifty</button>
+      <button class="tab" data-idx="SENSEX" onclick="switchIdx('SENSEX')">Sensex</button>
+    </div>
+    <div class="maxpain">
+      <span class="label">Max Pain Strike</span>
+      <span class="val mono" id="maxpain-val">--</span>
+    </div>
+    <div class="body" id="oi-body">
+      <div class="m" style="text-align:center;padding:20px;">Loading options chain...</div>
+    </div>
+  </section>
+  <section class="panel" id="signal-panel">
+    <header>
+      <h3>Signal Feed</h3>
+      <button onclick="clearFeed()" style="font-size:10px;">Clear</button>
+    </header>
+    <div class="body" id="feed"></div>
+  </section>
+  <section class="panel" id="rsi-panel">
+    <header><h3>RSI Engine</h3></header>
+    <div class="body" id="rsi-body"><div class="m">Loading RSI...</div></div>
+  </section>
+  <section class="panel" id="ema-panel">
+    <header><h3>EMA 13 / 50 / 200</h3></header>
+    <div class="body" id="ema-body"><div class="m">Loading EMA...</div></div>
+  </section>
+  <section class="panel" id="conf-panel">
+    <header><h3>Pattern Confluence</h3></header>
+    <div class="body" id="conf-body"><div class="m">Analyzing patterns...</div></div>
+  </section>
+  <section class="panel" id="sr-panel">
+    <header><h3>S/R &amp; Sparkline</h3></header>
+    <div class="body">
+      <canvas id="spark-canvas" class="spark" width="400" height="120"></canvas>
+      <div id="sr-levels" class="mono" style="margin-top:6px;font-size:11px;"></div>
+    </div>
+  </section>
+  <section class="panel span2" id="trade-panel">
+    <header>
+      <h3>Trade Log</h3>
+      <div>
+        <button class="primary" onclick="openTradeForm()">+ Log Trade</button>
+        <button onclick="exportCSV()">Export CSV</button>
+      </div>
+    </header>
+    <div class="body">
+      <table id="trades-table">
+        <thead><tr><th>Time</th><th>Idx</th><th>Strike</th><th>Type</th><th>Qty</th><th>Entry</th><th>Exit</th><th>P&amp;L</th><th></th></tr></thead>
+        <tbody id="trades-body"></tbody>
+      </table>
+    </div>
+  </section>
+  <section class="panel" id="breakout-panel">
+    <header><h3>Breakout Detector</h3></header>
+    <div class="body" id="breakout-body"><div class="m">Monitoring breakouts...</div></div>
+  </section>
+</main>
+<div id="ticker"><div id="ticker-inner"><span class="prefix">NEWS</span><span class="m">Loading RSS feeds...</span></div></div>
+<div id="tradeform">
+  <h2 class="head">Log Trade</h2>
+  <div class="row"><label>Index</label><select id="tf-idx"><option>NIFTY</option><option>BANKNIFTY</option><option>SENSEX</option></select></div>
+  <div class="row"><label>Strike</label><input type="number" id="tf-strike" /></div>
+  <div class="row"><label>Type</label><select id="tf-type"><option>CE</option><option>PE</option></select></div>
+  <div class="row"><label>Qty (lots)</label><input type="number" id="tf-qty" value="1" /></div>
+  <div class="row"><label>Entry Premium</label><input type="number" id="tf-entry" step="0.05" /></div>
+  <div class="row" style="justify-content:flex-end;gap:6px;margin-top:10px;">
+    <button onclick="closeTradeForm()">Cancel</button>
+    <button class="primary" onclick="saveTrade()">Save</button>
+  </div>
+</div>
+<div id="settings">
+  <button onclick="closeSettings()" style="position:absolute;top:6px;right:8px;background:none;border:none;color:var(--white);cursor:pointer;font-size:16px;">x</button>
+  <h2>Settings: Zerodha Kite (Advanced / Experimental)</h2>
+  <div class="warn">Credentials stored in your browser's localStorage only. Never transmitted to any server. Browsers will block direct calls to api.kite.trade without CORS, you need your own backend for live trading.</div>
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <label class="m" style="font-size:10px;">API Key<input id="kite-key" style="width:100%;" /></label>
+    <label class="m" style="font-size:10px;">API Secret<input id="kite-secret" type="password" style="width:100%;" /></label>
+    <label class="m" style="font-size:10px;">Request Token<input id="kite-token" style="width:100%;" /></label>
+  </div>
+  <div style="display:flex;gap:6px;margin-top:10px;justify-content:flex-end;">
+    <button onclick="clearKite()">Clear</button>
+    <button class="primary" onclick="saveKite()">Save</button>
+    <button onclick="testKite()">Test getLTP()</button>
+  </div>
+  <div id="kite-result" class="mono m" style="margin-top:8px;font-size:10px;"></div>
+</div>
+<div id="popups"></div>
+<div id="toasts"></div>
+<footer>DATA IS DELAYED AND BEST-EFFORT FROM PUBLIC SOURCES. NOT FINANCIAL ADVICE. FOR EDUCATIONAL USE ONLY.</footer>
+<script src="./app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js').catch(()=>{}); });
+}
+</script>
+</body>
+</html>
